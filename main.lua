@@ -1,3 +1,67 @@
+local function elementInSet(set, element)
+    for i=1,#set do
+        if set[i] == element then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function connectToMaze(cell)
+    local adjacent = {}
+
+    if cell.top then
+        if elementInSet(inTheMaze, cell.top) then
+            table.insert(adjacent, cell.top)
+        end
+    end
+    if cell.bottom then
+        if elementInSet(inTheMaze, cell.bottom) then
+            table.insert(adjacent, cell.bottom)
+        end
+    end
+    if cell.left then
+        if elementInSet(inTheMaze, cell.left) then
+            table.insert(adjacent, cell.left)
+        end
+    end
+    if cell.right then
+        if elementInSet(inTheMaze, cell.right) then
+            table.insert(adjacent, cell.right)
+        end
+    end
+    
+    if #adjacent > 0 then
+        local chosen = adjacent[love.math.random(#adjacent)]
+        if chosen.bottom then
+            if cell.top == chosen then
+                cell.tc = true
+                chosen.bc = true
+            end
+        end
+        if chosen.top then
+            if cell.bottom == chosen then
+                cell.bc = true
+                chosen.tc = true
+            end
+        end
+        if chosen.right then
+            if cell.left == chosen then
+                cell.lc = true
+                chosen.rc = true
+            end
+        end
+        if chosen.left then
+            if cell.right == chosen then
+                cell.rc = true
+                chosen.lc = true
+            end
+        end
+    end
+    
+end
+
 local width = 1000
 local height = 1000
 
@@ -9,9 +73,8 @@ local h = height / rows
 
 local grid = {}
 
-local openSet = {}
-
-local totalCells = 0
+inTheMaze = {}
+local frontier = {}
 
 local done = false
 
@@ -31,7 +94,7 @@ function Cell(i, j)
     this.lc = false
     this.rc = false
 
-    this.visited = false
+    this.current = false
 
     function this:addNeighbors(grid)
         if self.i < rows then
@@ -73,28 +136,42 @@ function Cell(i, j)
             love.graphics.line(self.j * w, (self.i - 1) * h,
                                 self.j * w, self.i * h)
         end
+
+        if elementInSet(frontier, self) and elementInSet(inTheMaze, self) then
+            love.graphics.setColor(1, 0, 0, 1)
+            love.graphics.circle("fill", (self.j - 1) * w + w/2, (self.i - 1) * h + h/2, w/3)
+        elseif elementInSet(frontier, self) then
+            love.graphics.setColor(0, 1, 0, 1)
+            love.graphics.circle("fill", (self.j - 1) * w + w/2, (self.i - 1) * h + h/2, w/3)
+        end
+
+        if self.current then
+            love.graphics.setColor(0, 0, 1, 1)
+            love.graphics.circle("fill", (self.j - 1) * w + w/2, (self.i - 1) * h + h/2, w/3)
+        end
+
     end
 
     function this:getNeighbors()
         local available = {}
         if self.top then
-            if not self.top.visited then
-                table.insert(available, 1)
+            if not elementInSet(inTheMaze, self.top) then
+                table.insert(available, self.top)
             end
         end
         if self.bottom then
-            if not self.bottom.visited then
-                table.insert(available, 2)
+            if not elementInSet(inTheMaze, self.bottom) then
+                table.insert(available, self.bottom)
             end
         end
         if self.left then
-            if not self.left.visited then
-                table.insert(available, 3)
+            if not elementInSet(inTheMaze, self.left) then
+                table.insert(available, self.left)
             end
         end
         if self.right then
-            if not self.right.visited then
-                table.insert(available, 4)
+            if not elementInSet(inTheMaze, self.right) then
+                table.insert(available, self.right)
             end
         end
 
@@ -111,7 +188,6 @@ function love.load()
         grid[i] = {}
         for j=1,cols do
             grid[i][j] = Cell(i, j)
-            totalCells = totalCells + 1
         end
     end
 
@@ -121,43 +197,42 @@ function love.load()
         end
     end
 
-    table.insert(openSet, grid[love.math.random(rows)][love.math.random(cols)])
+    table.insert(inTheMaze, grid[love.math.random(rows)][love.math.random(cols)])
+
+    local neighbors = inTheMaze[1]:getNeighbors()
+    for i,v in ipairs(neighbors) do
+        if not elementInSet(inTheMaze, v) then
+            table.insert(frontier, v)
+        end
+    end
 end
 
 function love.update(dt)
-    if not done and #openSet < totalCells then
-        local index = love.math.random(#openSet)
-        local current = openSet[index]
-        current.visited = true
-
-        local available = current:getNeighbors()
-        local choice = available[love.math.random(#available)]
-        if #available > 0 then
-            if choice == 1 then
-                current.tc = true
-                current.top.bc = true
-                current.top.visited = true
-                table.insert(openSet, current.top)
-            elseif choice == 2 then
-                current.bc = true
-                current.bottom.tc = true
-                current.bottom.visited = true
-                table.insert(openSet, current.bottom)
-            elseif choice == 3 then
-                current.lc = true
-                current.left.rc = true
-                current.left.visited = true
-                table.insert(openSet, current.left)
-            elseif choice == 4 then
-                current.rc = true
-                current.right.lc = true
-                current.right.visited = true
-                table.insert(openSet, current.right)
-            end
-        end
-        if #openSet == totalCells then
+    if not done then
+        if #frontier == 0 then
             done = true
-            print("DONE!")
+        else
+            local chosenIndex = love.math.random(#frontier)
+            local current = frontier[chosenIndex]
+            table.insert(inTheMaze, current)
+            table.remove(frontier, chosenIndex)
+            current.current = true
+
+            connectToMaze(current)
+
+            local neighbors = current:getNeighbors()
+            for i,v in ipairs(neighbors) do
+                if not elementInSet(inTheMaze, v) and not elementInSet(frontier, v) then
+                    table.insert(frontier, v)
+                end
+            end
+
+            if #frontier == 0 then
+                print("DONE!")
+                done = true
+            end
+
+            current.current = false
         end
     end
 end
