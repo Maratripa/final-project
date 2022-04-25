@@ -15,39 +15,6 @@ function Astar(maze)
 
     this.done = false
 
-    local function findNeighbors(cell)
-        local list = {}
-
-        if cell.top then
-            table.insert(list, cell.top)
-        end
-        if cell.bottom then
-            table.insert(list, cell.bottom)
-        end
-        if cell.left then
-            table.insert(list, cell.left)
-        end
-        if cell.right then
-            table.insert(list, cell.right)
-        end
-
-        return list
-    end
-
-    local function areConnected(c1, c2)
-        if c1.top == c2 and c1.tc then
-            return true
-        elseif c1.bottom == c2 and c1.bc then
-            return true
-        elseif c1.left == c2 and c1.lc then
-            return true
-        elseif c1.right == c2 and c1.rc then
-            return true
-        else
-            return false
-        end
-    end
-
     local function heuristic(c1, c2)
         local dx = c1.j - c2.j
         local dy = c1.i - c2.i
@@ -77,7 +44,7 @@ function Astar(maze)
 
     function this:update(dt)
         if #this.open_set > 0 then
-            
+
             local winner = 1
             for i,v in ipairs(this.open_set) do
                 if v.f < this.open_set[winner].f then
@@ -145,13 +112,13 @@ function Astar(maze)
         for i=1,#this.path-1 do
             love.graphics.setLineWidth(w / 5)
             love.graphics.setLineStyle("smooth")
-            love.graphics.setLineJoin("bevel")
+            love.graphics.setLineJoin("none")
             love.graphics.setColor(0, 0, 1, 1)
 
             local points = {}
-            for k=1,#this.path do
-                table.insert(points, (this.path[k].j - 1) * w + math.floor(w / 2))
-                table.insert(points, (this.path[k].i - 1) * h + math.floor(h / 2))
+            for i=1,#this.path do
+                table.insert(points, (this.path[i].j - 1) * w + math.floor(w / 2))
+                table.insert(points, (this.path[i].i - 1) * h + math.floor(h / 2))
             end
             love.graphics.line(points)
         end

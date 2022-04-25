@@ -1,5 +1,6 @@
 require "entities.maze"
 require "algs.astar"
+require "algs.bfs"
 
 local width = 1000
 local height = 1000
@@ -18,15 +19,15 @@ function love.load()
 
     maze:generate()
 
-    astar = Astar(maze)
+    alg = BFS(maze)
 
-    astar:setup()
+    alg:setup()
 end
 
 function love.update(dt)
     if maze.done then
-        if not astar.done then
-            astar:update(dt)
+        if not alg.done then
+            alg:update(dt)
         end
     end
 end
@@ -34,5 +35,5 @@ end
 function love.draw()
     love.graphics.setBackgroundColor(1, 1, 1, 1)
     maze:draw()
-    astar:draw()
+    alg:draw()
 end
