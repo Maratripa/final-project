@@ -125,8 +125,6 @@ function Astar(maze)
 
         for i=1,#this.path-1 do
             love.graphics.setLineWidth(w / 4)
-            love.graphics.setLineStyle("smooth")
-            love.graphics.setLineJoin("none")
             love.graphics.setColor(0, 0, 1, 1)
 
             local points = {}
