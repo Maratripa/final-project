@@ -60,21 +60,38 @@ function BFS(maze)
     function this:draw()
         local w = maze.width / maze.cols
         local h = maze.height / maze.rows
+        --[[
         for i,v in ipairs(this.explored) do
             love.graphics.setColor(0, 1, 0, 1)
             love.graphics.circle("fill", (v.j - 1) * w + w / 2,
                                          (v.i - 1) * h + h / 2,
                                           w / 5)
         end
+        ]]--
+
+        love.graphics.setColor(0, 1, 0, 1)
+        love.graphics.setLineWidth(w / 5)
+        for i,v in ipairs(this.explored) do
+            if v.parent then
+                love.graphics.line((v.parent.j - 1) * w + w / 2, (v.parent.i - 1) * h + h / 2,
+                                    (v.j - 1) * w + w / 2, (v.i - 1) * h + h / 2)
+            end
+        end
+
         if this.done then
-            love.graphics.setColor(0, 0, 1, 1)
+            local path = {}
             local temp = this.ending
+            table.insert(path, (temp.j - 1) * w + w / 2)
+            table.insert(path, (temp.i - 1) * h + h / 2)
             while temp.parent do
-                love.graphics.circle("fill", (temp.j - 1) * w + w / 2,
-                                         (temp.i - 1) * h + h / 2,
-                                          w / 5)
+                table.insert(path, (temp.parent.j - 1) * w + w / 2)
+                table.insert(path, (temp.parent.i - 1) * h + h / 2)
                 temp = temp.parent
             end
+            love.graphics.setColor(0, 0, 1, 1)
+            love.graphics.setLineWidth(w / 4)
+            love.graphics.line(path)
+            
         end
     end
 

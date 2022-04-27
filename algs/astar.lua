@@ -109,8 +109,22 @@ function Astar(maze)
         local w = math.floor(maze.width / maze.cols)
         local h = math.floor(maze.height / maze.rows)
 
+        for i,v in ipairs(this.open_set) do
+            love.graphics.setColor(0, 1, 0, 1)
+            love.graphics.circle("fill", (v.j - 1) * w + w / 2,
+                                         (v.i - 1) * h + h / 2, w / 5)
+        end
+
+        for i,v in ipairs(this.closed_set) do
+            if not elementInSet(this.path, v) then
+                love.graphics.setColor(1, 0, 0, 1)
+                love.graphics.circle("fill", (v.j - 1) * w + w / 2,
+                                            (v.i - 1) * h + h / 2, w / 5)
+            end
+        end
+
         for i=1,#this.path-1 do
-            love.graphics.setLineWidth(w / 5)
+            love.graphics.setLineWidth(w / 4)
             love.graphics.setLineStyle("smooth")
             love.graphics.setLineJoin("none")
             love.graphics.setColor(0, 0, 1, 1)
