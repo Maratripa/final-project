@@ -1,39 +1,51 @@
+local settings = require "settings"
+
+require "menu"
 require "entities.maze"
-require "algs.astar"
-require "algs.bfs"
 
-local width = 1000
-local height = 1000
+settings.maze = Maze(settings.rows, settings.cols, settings.width, settings.height)
 
-local cols = 50
-local rows = 50
+settings.maze:populate()
+settings.maze:setRandomStart()
+settings.maze:generate()
 
 function love.load()
-    love.window.setMode(width, height)
+    love.window.setMode(settings.width, settings.height, nil)
 
-    maze = Maze(rows, cols, width, height)
+    menu = LoadMenu()
 
-    maze:populate()
-
-    maze:setRandomStart()
-
-    maze:generate()
-
-    alg = BFS(maze)
-
-    alg:setup()
+    alg = settings.alg
 end
 
 function love.update(dt)
-    if maze.done then
-        if not alg.done then
-            alg:update(dt)
+    if not settings.paused then
+        if settings.maze.done then
+            if not alg.done then
+                alg:update(dt)
+            end
         end
     end
 end
 
 function love.draw()
     love.graphics.setBackgroundColor(1, 1, 1, 1)
-    maze:draw()
-    alg:draw()
+    if settings.paused then
+        menu:draw()
+    else
+        settings.maze:draw()
+        alg:draw()
+    end
+end
+
+function love.keypressed(k)
+    -- Toggle paused mode
+    if k == "escape" then
+        settings.paused = not settings.paused
+    end
+end
+
+function love.mousepressed(x, y)
+    if settings.paused then
+        menu:processMouse(x, y)
+    end
 end
