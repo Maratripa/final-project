@@ -14,42 +14,47 @@ function BFS(maze)
     this.path = {}
 
     this.done = false
+    this.start_time = nil
+    this.time = nil
 
     function this:setup()
-        this.grid = maze.grid
+        self.grid = maze.grid
 
-        for i=1,#this.grid do
-            for j=1,#this.grid[1] do
-                this.grid[i][j].dist = 1e309
-                this.grid[i][j].parent = nil
+        for i=1,#self.grid do
+            for j=1,#self.grid[1] do
+                self.grid[i][j].dist = 1e309
+                self.grid[i][j].parent = nil
             end
         end
 
-        this.start = this.grid[1][1]
-        this.ending = this.grid[#this.grid][#this.grid[1]]
+        self.start = self.grid[1][1]
+        self.ending = self.grid[#self.grid][#self.grid[1]]
 
-        table.insert(this.explored, this.start)
-        this.start.dist = 0
-        table.insert(this.queue, this.start)
+        table.insert(self.explored, self.start)
+        self.start.dist = 0
+        table.insert(self.queue, self.start)
+
+        self.start_time = love.timer.getTime()
     end
 
     function this:update(dt)
-        if #this.queue > 0 then
-            local current = this.queue[1]
-            table.remove(this.queue, 1)
+        if #self.queue > 0 then
+            local current = self.queue[1]
+            table.remove(self.queue, 1)
 
-            if current == this.ending then
-                this.done = true
+            if current == self.ending then
+                self.done = true
+                self.time = love.timer.getTime() - self.start_time
             end
 
             local neighbors = findNeighbors(current)
 
             for i,v in ipairs(neighbors) do
-                if not elementInSet(this.explored, v) and areConnected(current, v) then
-                    table.insert(this.explored, v)
+                if not elementInSet(self.explored, v) and areConnected(current, v) then
+                    table.insert(self.explored, v)
                     v.dist = current.dist + 1
                     v.parent = current
-                    table.insert(this.queue, v)
+                    table.insert(self.queue, v)
                 end
             end
 
@@ -69,18 +74,28 @@ function BFS(maze)
         end
         ]]--
 
-        love.graphics.setColor(0, 1, 0, 1)
+        love.graphics.setColor(0, 1, 0, 0.4)
         love.graphics.setLineWidth(w / 5)
-        for i,v in ipairs(this.explored) do
+        for i,v in ipairs(self.explored) do
             if v.parent then
                 love.graphics.line((v.parent.j - 1) * w + w / 2, (v.parent.i - 1) * h + h / 2,
                                     (v.j - 1) * w + w / 2, (v.i - 1) * h + h / 2)
             end
         end
 
-        if this.done then
+        local time = nil
+        if not self.done then
+            time = string.format("Time: %.3f" .. 's', love.timer.getTime() - self.start_time)
+        else
+            time = string.format("Time: %.3f" .. 's', self.time)
+        end
+
+        love.graphics.setColor(0.05, 0.05, 0.05, 1)
+        love.graphics.printf(time, maze.width / 2, h / 2, maze.width, "left")
+
+        if self.done then
             local path = {}
-            local temp = this.ending
+            local temp = self.ending
             table.insert(path, (temp.j - 1) * w + w / 2)
             table.insert(path, (temp.i - 1) * h + h / 2)
             while temp.parent do

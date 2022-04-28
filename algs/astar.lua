@@ -14,6 +14,8 @@ function Astar(maze)
     this.path = {}
 
     this.done = false
+    this.start_time = nil
+    this.time = nil
 
     local function heuristic(c1, c2)
         local dx = c1.j - c2.j
@@ -25,10 +27,10 @@ function Astar(maze)
     end
 
     function this:setup()
-        this.grid = maze.grid
-        for i=1,#this.grid do
-            for j=1,#this.grid[1] do
-                local current = this.grid[i][j]
+        self.grid = maze.grid
+        for i=1,#self.grid do
+            for j=1,#self.grid[1] do
+                local current = self.grid[i][j]
                 current.f = 0
                 current.g = 0
                 current.h = 0
@@ -36,35 +38,37 @@ function Astar(maze)
             end
         end
 
-        this.start = this.grid[1][1]
-        this.ending = this.grid[#this.grid][#this.grid[1]]
+        self.start = self.grid[1][1]
+        self.ending = self.grid[#self.grid][#self.grid[1]]
 
-        table.insert(this.open_set, this.start)
+        table.insert(self.open_set, self.start)
+        self.start_time = love.timer.getTime()
     end
 
     function this:update(dt)
-        if #this.open_set > 0 then
+        if #self.open_set > 0 then
 
             local winner = 1
-            for i,v in ipairs(this.open_set) do
-                if v.f < this.open_set[winner].f then
+            for i,v in ipairs(self.open_set) do
+                if v.f < self.open_set[winner].f then
                     winner = i
                 end
             end
             
-            local current = this.open_set[winner]
+            local current = self.open_set[winner]
 
-            if current == this.ending then
+            if current == self.ending then
                 print("DONE!")
-                this.done = true
+                self.done = true
+                self.time = love.timer.getTime() - self.start_time
             end
 
-            table.remove(this.open_set, winner)
-            table.insert(this.closed_set, current)
+            table.remove(self.open_set, winner)
+            table.insert(self.closed_set, current)
 
             local neighbors = findNeighbors(current)
             for i,v in ipairs(neighbors) do
-                if elementInSet(this.closed_set, v) or not areConnected(current, v) then
+                if elementInSet(self.closed_set, v) or not areConnected(current, v) then
                     goto continue
                 end
 
@@ -72,7 +76,7 @@ function Astar(maze)
 
                 local new_path = false
 
-                if elementInSet(this.open_set, v) then
+                if elementInSet(self.open_set, v) then
                     if temp_g < v.g then
                         v.g = temp_g
                         new_path = true
@@ -80,11 +84,11 @@ function Astar(maze)
                 else
                     v.g = temp_g
                     new_path = true
-                    table.insert(this.open_set, v)
+                    table.insert(self.open_set, v)
                 end
 
                 if new_path then
-                    v.h = heuristic(v, this.ending)
+                    v.h = heuristic(v, self.ending)
                     v.f = v.g + v.h
                     v.previous = current
                 end
@@ -92,16 +96,17 @@ function Astar(maze)
                 ::continue::
             end
 
-            this.path = {}
+            self.path = {}
             local temp = current
-            table.insert(this.path, temp)
+            table.insert(self.path, temp)
             while temp.previous do
-                table.insert(this.path, temp.previous)
+                table.insert(self.path, temp.previous)
                 temp = temp.previous
             end
         else
             print("NO SOLUTION")
-            this.done = true
+            self.done = true
+            self.time = love.timer.getTime() - self.start_time
         end
     end
 
@@ -109,31 +114,41 @@ function Astar(maze)
         local w = math.floor(maze.width / maze.cols)
         local h = math.floor(maze.height / maze.rows)
 
-        for i,v in ipairs(this.open_set) do
+        for i,v in ipairs(self.open_set) do
             love.graphics.setColor(0, 1, 0, 1)
             love.graphics.circle("fill", (v.j - 1) * w + w / 2,
                                          (v.i - 1) * h + h / 2, w / 5)
         end
 
-        for i,v in ipairs(this.closed_set) do
-            if not elementInSet(this.path, v) then
+        for i,v in ipairs(self.closed_set) do
+            if not elementInSet(self.path, v) then
                 love.graphics.setColor(1, 0, 0, 1)
                 love.graphics.circle("fill", (v.j - 1) * w + w / 2,
                                             (v.i - 1) * h + h / 2, w / 5)
             end
         end
 
-        for i=1,#this.path-1 do
-            love.graphics.setLineWidth(w / 4)
+        for i=1,#self.path-1 do
+            love.graphics.setLineWidth(w / 5)
             love.graphics.setColor(0, 0, 1, 1)
 
             local points = {}
-            for i=1,#this.path do
-                table.insert(points, (this.path[i].j - 1) * w + math.floor(w / 2))
-                table.insert(points, (this.path[i].i - 1) * h + math.floor(h / 2))
+            for i=1,#self.path do
+                table.insert(points, (self.path[i].j - 1) * w + math.floor(w / 2))
+                table.insert(points, (self.path[i].i - 1) * h + math.floor(h / 2))
             end
             love.graphics.line(points)
         end
+
+        local time = nil
+        if not self.done then
+            time = string.format("Time: %.3f" .. 's', love.timer.getTime() - self.start_time)
+        else
+            time = string.format("Time: %.3f" .. 's', self.time)
+        end
+
+        love.graphics.setColor(0.05, 0.05, 0.05, 1)
+        love.graphics.printf(time, maze.width - 100, h / 2, maze.width, "left")
     end
 
     return this
