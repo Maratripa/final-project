@@ -11,6 +11,7 @@ settings.maze:setRandomStart()
 settings.maze:generate()
 
 function love.load()
+    love.window.setTitle("Maze solving")
     love.window.setMode(settings.width, settings.height, nil)
 
     menu = LoadMenu()
