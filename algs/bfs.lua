@@ -14,8 +14,6 @@ function BFS(maze)
     this.path = {}
 
     this.done = false
-    this.start_time = nil
-    this.time = nil
 
     function this:setup()
         self.grid = maze.grid
@@ -33,8 +31,6 @@ function BFS(maze)
         table.insert(self.explored, self.start)
         self.start.dist = 0
         table.insert(self.queue, self.start)
-
-        self.start_time = love.timer.getTime()
     end
 
     function this:update(dt)
@@ -44,7 +40,6 @@ function BFS(maze)
 
             if current == self.ending then
                 self.done = true
-                self.time = love.timer.getTime() - self.start_time
             end
 
             local neighbors = findNeighbors(current)
@@ -82,16 +77,6 @@ function BFS(maze)
                                     (v.j - 1) * w + w / 2, (v.i - 1) * h + h / 2)
             end
         end
-
-        local time = nil
-        if not self.done then
-            time = string.format("Time: %.3f" .. 's', love.timer.getTime() - self.start_time)
-        else
-            time = string.format("Time: %.3f" .. 's', self.time)
-        end
-
-        love.graphics.setColor(0.05, 0.05, 0.05, 1)
-        love.graphics.printf(time, maze.width / 2, h / 2, maze.width, "left")
 
         if self.done then
             local path = {}

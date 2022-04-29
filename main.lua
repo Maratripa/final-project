@@ -1,6 +1,7 @@
 local settings = require "settings"
 
 require "menu"
+require "timer"
 require "entities.maze"
 
 settings.maze = Maze(settings.rows, settings.cols, settings.width, settings.height)
@@ -15,6 +16,10 @@ function love.load()
     menu = LoadMenu()
 
     alg = settings.alg
+
+    timer = Timer()
+
+    timer:start()
 end
 
 function love.update(dt)
@@ -22,6 +27,7 @@ function love.update(dt)
         if settings.maze.done then
             if not alg.done then
                 alg:update(dt)
+                timer:update()
             end
         end
     end
@@ -34,6 +40,7 @@ function love.draw()
     else
         settings.maze:draw()
         alg:draw()
+        timer:draw()
     end
 end
 

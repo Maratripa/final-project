@@ -24,6 +24,9 @@ local function Button(pos_x, pos_y, width, height, text, callback)
     }
 
     function entity:draw()
+        local font = love.graphics.setNewFont(20)
+        love.graphics.setFont(font)
+
         love.graphics.setColor(self.colors.background)
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 
@@ -52,7 +55,9 @@ local function Text(pos_x, pos_y, width, text)
 
     function entity:draw()
         love.graphics.setColor(self.colors.text)
-        love.graphics.printf(self.text, self.x, self.y / 3, self.width, "center")
+        local font = love.graphics.setNewFont(30)
+        love.graphics.setFont(font)
+        love.graphics.printf(self.text, self.x, self.y, self.width, "center")
     end
 
     return entity
@@ -73,7 +78,7 @@ function LoadMenu()
     table.insert(menu.widgets, title)
 
     -- Create A* button
-    local astar_button = Button(spacer, spacer * 2, button_width, button_width / 3, "A* Algorithm",
+    local astar_button = Button(spacer, spacer * 3, button_width, button_width / 3, "A* Algorithm",
                                 function()
                                     settings.alg = Astar(settings.maze)
                                     settings.alg:setup()
@@ -84,7 +89,7 @@ function LoadMenu()
     table.insert(menu.buttons, astar_button)
 
     -- Create BFS button
-    local bfs_button = Button(spacer * 2 + button_width, spacer * 2, button_width, button_width / 3,
+    local bfs_button = Button(spacer * 2 + button_width, spacer * 3, button_width, button_width / 3,
                               "BFS Algorithm", function()
                                 settings.alg = BFS(settings.maze)
                                 settings.alg:setup()

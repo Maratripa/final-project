@@ -14,8 +14,6 @@ function Astar(maze)
     this.path = {}
 
     this.done = false
-    this.start_time = nil
-    this.time = nil
 
     local function heuristic(c1, c2)
         local dx = c1.j - c2.j
@@ -42,7 +40,6 @@ function Astar(maze)
         self.ending = self.grid[#self.grid][#self.grid[1]]
 
         table.insert(self.open_set, self.start)
-        self.start_time = love.timer.getTime()
     end
 
     function this:update(dt)
@@ -60,7 +57,6 @@ function Astar(maze)
             if current == self.ending then
                 print("DONE!")
                 self.done = true
-                self.time = love.timer.getTime() - self.start_time
             end
 
             table.remove(self.open_set, winner)
@@ -106,7 +102,6 @@ function Astar(maze)
         else
             print("NO SOLUTION")
             self.done = true
-            self.time = love.timer.getTime() - self.start_time
         end
     end
 
@@ -139,16 +134,6 @@ function Astar(maze)
             end
             love.graphics.line(points)
         end
-
-        local time = nil
-        if not self.done then
-            time = string.format("Time: %.3f" .. 's', love.timer.getTime() - self.start_time)
-        else
-            time = string.format("Time: %.3f" .. 's', self.time)
-        end
-
-        love.graphics.setColor(0.05, 0.05, 0.05, 1)
-        love.graphics.printf(time, maze.width - 100, h / 2, maze.width, "left")
     end
 
     return this
